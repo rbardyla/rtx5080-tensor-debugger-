@@ -49,3 +49,16 @@ Cargo.lock
 node_modules/
 *.min.js
 *.min.css
+
+# VS Code Extension build files
+*.vsix
+package-lock.json
+.vscode-test/
+out/
+
+# Local documentation/guides
+PUBLISH_TO_MARKETPLACE.md
+REDDIT_UPDATE_TEMPLATE.md  
+CREATE_GITHUB_RELEASE.md
+EXTENSION_SUMMARY.md
+HOW_TO_*
