@@ -1,0 +1,8 @@
+# Core dependencies (demo version)
+# No external dependencies required for demo!
+# Python 3.8+ standard library only
+
+# Optional for full RTX 5080 version:
+# torch>=2.0.0
+# tch>=0.15.0
+# numpy>=1.21.0
