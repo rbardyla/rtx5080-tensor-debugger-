@@ -1,0 +1,93 @@
+{
+  "name": "rtx5080-tensor-debugger",
+  "displayName": "RTX 5080 Tensor Debugger Pro",
+  "description": "Real-time PyTorch tensor shape debugging with enterprise-grade diagnostics for Linear and Conv2d layers",
+  "version": "1.0.0",
+  "publisher": "rtx5080-dev",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Linters",
+    "Debuggers",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "pytorch",
+    "tensor",
+    "debugging",
+    "machine learning",
+    "ai",
+    "neural networks",
+    "deep learning"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "rtx5080.checkTensorShapes",
+        "title": "Check Tensor Shapes",
+        "category": "RTX 5080"
+      },
+      {
+        "command": "rtx5080.analyzePyTorchCode",
+        "title": "Analyze PyTorch Code",
+        "category": "RTX 5080"
+      }
+    ],
+    "languages": [
+      {
+        "id": "python",
+        "extensions": [
+          ".py"
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "RTX 5080 Tensor Debugger",
+      "properties": {
+        "rtx5080.enableRealTimeChecking": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable real-time tensor shape checking as you type"
+        },
+        "rtx5080.showHoverTooltips": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show hover tooltips with tensor shape fixes"
+        },
+        "rtx5080.enableStatusBarIndicator": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show tensor issues count in status bar"
+        }
+      }
+    }
+  },
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "eslint": "^8.28.0"
+  },
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#0a0a0a",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/rtx5080-dev/tensor-debugger",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rtx5080-dev/tensor-debugger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rtx5080-dev/tensor-debugger/issues"
+  }
+}

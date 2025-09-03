@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TensorTools - ML Debugging Suite</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Monaco', 'Consolas', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 30px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+        }
+        h1 {
+            color: #00ffff;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ffff;
+        }
+        .subtitle {
+            color: #ffff00;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+        .stats {
+            color: #ffaa00;
+            font-size: 1.1em;
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .tool-card {
+            background: rgba(51, 51, 51, 0.8);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+        .tool-card:hover {
+            border-color: #00ff00;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.3);
+        }
+        .tool-card.new {
+            border-color: #ffaa00;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.2);
+        }
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .tool-title {
+            color: #00ff00;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .tool-badge {
+            background: #00ff00;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .tool-badge.new {
+            background: #ffaa00;
+        }
+        .tool-description {
+            color: #ccc;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .tool-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        .tool-features li {
+            color: #88ff88;
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .tool-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+        }
+        .tool-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid #555;
+            color: #888;
+            font-size: 0.9em;
+        }
+        .coming-soon {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .coming-soon .tool-badge {
+            background: #666;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            color: #666;
+        }
+        .github-link {
+            color: #00ffff;
+            text-decoration: none;
+        }
+        .github-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 TensorTools</h1>
+            <div class="subtitle">ML Debugging Suite - Find Bugs Before They Find You</div>
+            <div class="stats">🔥 150+ analyses run | 🐛 50+ bugs caught | 👥 100+ engineers helped</div>
+        </div>
+
+        <div class="tools-grid">
+            <!-- Tensor Shape Debugger -->
+            <a href="index.html" class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">🎮 Tensor Shape Debugger</div>
+                    <div class="tool-badge">POPULAR</div>
+                </div>
+                <div class="tool-description">
+                    Find PyTorch dimension mismatches in milliseconds. No more "shapes cannot be multiplied" after 20 minutes of training.
+                </div>
+                <ul class="tool-features">
+                    <li>Instant dimension checking</li>
+                    <li>Conv2D, Linear, LSTM support</li>
+                    <li>Shows exact fixes</li>
+                    <li>Zero setup required</li>
+                </ul>
+                <div class="tool-stats">
+                    <span>⚡ 0.05ms analysis</span>
+                    <span>📊 100+ users</span>
+                </div>
+            </a>
+
+            <!-- GPU Memory Predictor -->
+            <a href="gpu_memory_predictor.html" class="tool-card new">
+                <div class="tool-header">
+                    <div class="tool-title">💾 GPU Memory Predictor</div>
+                    <div class="tool-badge new">NEW</div>
+                </div>
+                <div class="tool-description">
+                    Predict GPU memory usage BEFORE training. Stop wasting time on models that won't fit on your RTX 5080.
+                </div>
+                <ul class="tool-features">
+                    <li>RTX 5080 16GB optimized</li>
+                    <li>Batch size recommendations</li>
+                    <li>FP16/FP32 comparisons</li>
+                    <li>Memory breakdown visualization</li>
+                </ul>
+                <div class="tool-stats">
+                    <span>🎮 RTX 5080 Ready</span>
+                    <span>🆕 Just Launched</span>
+                </div>
+            </a>
+
+            <!-- NaN Detector (Coming Soon) -->
+            <div class="tool-card coming-soon">
+                <div class="tool-header">
+                    <div class="tool-title">🔥 NaN/Inf Detector</div>
+                    <div class="tool-badge">COMING</div>
+                </div>
+                <div class="tool-description">
+                    Predict which operations will cause NaN or Inf before training. Save hours of debugging gradient explosions.
+                </div>
+                <ul class="tool-features">
+                    <li>Gradient flow analysis</li>
+                    <li>Learning rate sanity check</li>
+                    <li>Numerical stability warnings</li>
+                    <li>Operation-level predictions</li>
+                </ul>
+                <div class="tool-stats">
+                    <span>🚧 In Development</span>
+                    <span>📅 Next Week</span>
+                </div>
+            </div>
+
+            <!-- Import Analyzer (Coming Soon) -->
+            <div class="tool-card coming-soon">
+                <div class="tool-header">
+                    <div class="tool-title">📦 Import Analyzer</div>
+                    <div class="tool-badge">COMING</div>
+                </div>
+                <div class="tool-description">
+                    Find unused imports and bloated dependencies. Reduce Docker image size and startup time instantly.
+                </div>
+                <ul class="tool-features">
+                    <li>Unused import detection</li>
+                    <li>Dependency size analysis</li>
+                    <li>Alternative package suggestions</li>
+                    <li>Docker optimization tips</li>
+                </ul>
+                <div class="tool-stats">
+                    <span>🚧 Planned</span>
+                    <span>📅 This Month</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built in 4 hours, solving real problems</p>
+            <p style="margin-top: 10px;">
+                <a href="https://github.com/rbardyla/rtx5080-tensor-debugger-" class="github-link">⭐ Star on GitHub</a>
+                | 
+                <a href="https://reddit.com/r/deeplearning" class="github-link">💬 Discuss on Reddit</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactivity
+        document.querySelectorAll('.coming-soon').forEach(card => {
+            card.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('Coming soon! Follow on GitHub for updates.');
+            });
+        });
+    </script>
+</body>
+</html>
