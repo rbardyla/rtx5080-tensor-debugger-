@@ -89,8 +89,8 @@ self.output = nn.Linear(512, 2)     # ✅ Matches attention output
 
 ### Clone & Run
 ```bash
-git clone https://github.com/yourusername/rtx5080-tensor-debugger.git
-cd rtx5080-tensor-debugger
+git clone https://github.com/ryanbardyla/rtx5080-tensor-debugger-.git
+cd rtx5080-tensor-debugger-
 python3 tensor-debugger-demo.py
 ```
 
