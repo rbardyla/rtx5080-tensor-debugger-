@@ -14,6 +14,18 @@
       gtag('js', new Date());
       gtag('config', 'G-XXXXXXXXXX'); // Replace with your GA4 measurement ID
       
+      // Simple visitor counter (works without GA)
+      let visits = parseInt(localStorage.getItem('rtx5080_visits') || '0');
+      visits++;
+      localStorage.setItem('rtx5080_visits', visits);
+      console.log(`🎮 Visit #${visits} to RTX 5080 Tensor Debugger`);
+      
+      // Track page load time
+      window.addEventListener('load', function() {
+        const loadTime = performance.now();
+        console.log(`⚡ Page loaded in ${loadTime.toFixed(0)}ms`);
+      });
+      
       // Track custom events
       function trackEvent(action, category, label, value) {
         gtag('event', action, {
@@ -265,6 +277,7 @@
         <div class="header">
             <h1>🎮 RTX 5080 Tensor Debugger Pro</h1>
             <div class="subtitle">Enterprise-Grade PyTorch Debugging with Advanced Architecture Support</div>
+            <div id="stats-banner" style="margin-top: 15px; color: #ffaa00; font-size: 0.9em; opacity: 0.8;"></div>
             <div class="feature-badges">
                 <span class="badge">🚀 0.05ms Analysis</span>
                 <span class="badge">🧠 Conv2D Support</span>
@@ -494,6 +507,11 @@ class LSTMModel(nn.Module):
                 trackEvent('analyze_code', 'engagement', 'code_analysis', 1);
             }
             
+            // Update local stats
+            let totalAnalyses = parseInt(localStorage.getItem('rtx5080_analyses') || '0');
+            totalAnalyses++;
+            localStorage.setItem('rtx5080_analyses', totalAnalyses);
+            
             resultsDiv.innerHTML = '<div style="color: #00ffff; text-align: center; padding: 40px;">🔄 Analyzing with RTX 5080 Professional Engine...</div>';
             
             // Simulate professional analysis
@@ -504,8 +522,22 @@ class LSTMModel(nn.Module):
                 exportDiv.style.display = 'block';
                 
                 // Track bugs found
-                if (currentAnalysis.errors.length > 0 && typeof trackEvent !== 'undefined') {
-                    trackEvent('bugs_found', 'results', 'errors_detected', currentAnalysis.errors.length);
+                if (currentAnalysis.errors.length > 0) {
+                    if (typeof trackEvent !== 'undefined') {
+                        trackEvent('bugs_found', 'results', 'errors_detected', currentAnalysis.errors.length);
+                    }
+                    
+                    // Update local bug count
+                    let bugsFound = parseInt(localStorage.getItem('rtx5080_bugs_found') || '0');
+                    bugsFound += currentAnalysis.errors.length;
+                    localStorage.setItem('rtx5080_bugs_found', bugsFound);
+                    
+                    // Update display
+                    const statsBanner = document.getElementById('stats-banner');
+                    if (statsBanner) {
+                        const totalAnalyses = parseInt(localStorage.getItem('rtx5080_analyses') || '0');
+                        statsBanner.innerHTML = `🔥 ${totalAnalyses} analyses run | 🐛 ${bugsFound} bugs found by users worldwide`;
+                    }
                 }
             }, 75); // Slightly longer for "professional" feel
         }
@@ -858,6 +890,14 @@ Try it yourself: https://ryanbardyla.github.io/rtx5080-tensor-debugger-/
         // Auto-load basic template on page load
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('codeInput').value = templates['basic'];
+            
+            // Display usage stats
+            const totalAnalyses = parseInt(localStorage.getItem('rtx5080_analyses') || '0');
+            const bugsFound = parseInt(localStorage.getItem('rtx5080_bugs_found') || '0');
+            const statsBanner = document.getElementById('stats-banner');
+            if (statsBanner) {
+                statsBanner.innerHTML = `🔥 ${totalAnalyses} analyses run | 🐛 ${bugsFound} bugs found by users worldwide`;
+            }
         });
 
         // Keyboard shortcuts
