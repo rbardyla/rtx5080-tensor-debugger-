@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RTX 5080 Tensor Debugger Pro - Enterprise Edition</title>
     <meta name="description" content="Professional PyTorch tensor debugging with Conv2D, LSTM, Transformer support">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX'); // Replace with your GA4 measurement ID
+      
+      // Track custom events
+      function trackEvent(action, category, label, value) {
+        gtag('event', action, {
+          'event_category': category,
+          'event_label': label,
+          'value': value
+        });
+      }
+    </script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -470,6 +489,11 @@ class LSTMModel(nn.Module):
                 return;
             }
             
+            // Track analysis event
+            if (typeof trackEvent !== 'undefined') {
+                trackEvent('analyze_code', 'engagement', 'code_analysis', 1);
+            }
+            
             resultsDiv.innerHTML = '<div style="color: #00ffff; text-align: center; padding: 40px;">🔄 Analyzing with RTX 5080 Professional Engine...</div>';
             
             // Simulate professional analysis
@@ -478,6 +502,11 @@ class LSTMModel(nn.Module):
                 displayAdvancedResults(currentAnalysis);
                 statsDiv.style.display = 'grid';
                 exportDiv.style.display = 'block';
+                
+                // Track bugs found
+                if (currentAnalysis.errors.length > 0 && typeof trackEvent !== 'undefined') {
+                    trackEvent('bugs_found', 'results', 'errors_detected', currentAnalysis.errors.length);
+                }
             }, 75); // Slightly longer for "professional" feel
         }
 
