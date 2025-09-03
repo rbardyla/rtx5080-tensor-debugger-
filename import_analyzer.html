@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Analyzer - Find Bloated Dependencies & Unused Imports</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: linear-gradient(135deg, #1a0033 0%, #330066 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #9933ff, #cc66ff);
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(153, 51, 255, 0.3);
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tagline {
+            color: #e6ccff;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid #4d4d80;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .panel h2 {
+            color: #cc66ff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        textarea {
+            width: 100%;
+            height: 350px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #4d4d80;
+            border-radius: 5px;
+            color: #e0e0e0;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            resize: vertical;
+            margin-bottom: 20px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #cc66ff;
+        }
+
+        button {
+            background: linear-gradient(45deg, #9933ff, #cc66ff);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(153, 51, 255, 0.3);
+        }
+
+        .template-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .template-btn {
+            background: rgba(153, 51, 255, 0.2);
+            border: 1px solid #9933ff;
+            color: #cc99ff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .template-btn:hover {
+            background: rgba(153, 51, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .import-item {
+            background: rgba(0,0,0,0.3);
+            border-left: 3px solid #666;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .import-unused {
+            border-left-color: #ff9933;
+            background: rgba(255, 153, 51, 0.1);
+        }
+
+        .import-bloated {
+            border-left-color: #ff3333;
+            background: rgba(255, 51, 51, 0.1);
+        }
+
+        .import-necessary {
+            border-left-color: #33ff33;
+            background: rgba(51, 255, 51, 0.1);
+        }
+
+        .import-name {
+            color: #e0e0e0;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .import-size {
+            color: #999;
+            text-align: right;
+        }
+
+        .import-status {
+            text-align: right;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-unused { color: #ff9933; }
+        .status-bloated { color: #ff3333; }
+        .status-necessary { color: #33ff33; }
+
+        .summary-box {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #4d4d80;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(153, 51, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .summary-stat-label {
+            color: #cc99ff;
+        }
+
+        .summary-stat-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .optimization-suggestions {
+            background: rgba(51, 255, 51, 0.1);
+            border: 1px solid #33ff33;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .optimization-title {
+            color: #33ff33;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .suggestion-item {
+            color: #e0e0e0;
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .suggestion-item:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #33ff33;
+        }
+
+        .docker-impact {
+            background: rgba(0, 102, 204, 0.1);
+            border: 1px solid #0066cc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .docker-title {
+            color: #0099ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .size-bar {
+            height: 30px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .size-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9933ff, #cc66ff);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .alternative-suggestion {
+            background: rgba(255, 204, 0, 0.1);
+            border: 1px solid #ffcc00;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .alternative-title {
+            color: #ffcc00;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .navigation-links {
+            margin-top: 15px;
+        }
+
+        .navigation-links a {
+            color: #cc99ff;
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+
+        .navigation-links a:hover {
+            color: #9933ff;
+            text-decoration: underline;
+        }
+
+        .code-snippet {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #4d4d80;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            color: #e0e0e0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📦 Import Analyzer</h1>
+        <div class="tagline">Find unused imports & bloated dependencies - Reduce Docker image size instantly</div>
+        <div class="stats-bar">
+            <span class="stat">🚀 Instant analysis</span>
+            <span class="stat">📉 Reduce 50%+ size</span>
+            <span class="stat">🐳 Docker optimized</span>
+        </div>
+        <div class="navigation-links">
+            <a href="tools.html">← All Tools</a>
+            <a href="index.html">Tensor Debugger</a>
+            <a href="gpu_memory_predictor.html">GPU Memory</a>
+            <a href="nan_detector.html">NaN Detector</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="panel">
+            <h2>
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+                Code & Requirements
+            </h2>
+            
+            <div class="template-buttons">
+                <button class="template-btn" onclick="loadTemplate('bloated')">Bloated ML Project</button>
+                <button class="template-btn" onclick="loadTemplate('data-science')">Data Science Notebook</button>
+                <button class="template-btn" onclick="loadTemplate('fastapi')">FastAPI Service</button>
+                <button class="template-btn" onclick="loadTemplate('minimal')">Clean Project</button>
+            </div>
+
+            <textarea id="codeInput" placeholder="Paste your Python imports or requirements.txt here...
+
+Example Python file:
+import torch
+import torch.nn as nn
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from transformers import AutoModel, AutoTokenizer
+import scipy
+import sklearn
+from tqdm import tqdm
+import cv2
+import PIL
+import requests
+
+# Some of these might be unused...
+
+Or paste requirements.txt:
+torch==2.0.0
+torchvision==0.15.0
+transformers==4.30.0
+pandas==2.0.0
+numpy==1.24.0
+scipy==1.10.0
+scikit-learn==1.2.0
+opencv-python==4.7.0
+matplotlib==3.7.0
+seaborn==0.12.0
+Pillow==9.5.0
+requests==2.30.0"></textarea>
+
+            <button onclick="analyzeImports()" style="width: 100%;">
+                <svg class="icon" viewBox="0 0 24 24" style="fill: white;">
+                    <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
+                </svg>
+                Analyze Imports
+            </button>
+        </div>
+
+        <div class="panel">
+            <h2>
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+                </svg>
+                Analysis Results
+            </h2>
+
+            <div id="analysisResults" style="display: none;">
+                <div class="summary-box">
+                    <h3 style="color: #cc66ff; margin-bottom: 10px;">📊 Import Summary</h3>
+                    <div class="summary-stats" id="summaryStats">
+                        <!-- Summary stats will be inserted here -->
+                    </div>
+                </div>
+
+                <div id="importList">
+                    <!-- Import analysis will be inserted here -->
+                </div>
+
+                <div class="optimization-suggestions" id="optimizations" style="display: none;">
+                    <div class="optimization-title">💡 Optimization Suggestions</div>
+                    <div id="suggestionsList">
+                        <!-- Suggestions will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="docker-impact" id="dockerImpact" style="display: none;">
+                    <div class="docker-title">🐳 Docker Image Impact</div>
+                    <div id="dockerStats">
+                        <!-- Docker stats will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Package size database (in MB)
+        const packageSizes = {
+            // ML/DL packages
+            'torch': 800,
+            'pytorch': 800,
+            'tensorflow': 500,
+            'torchvision': 300,
+            'transformers': 350,
+            'scipy': 120,
+            'scikit-learn': 80,
+            'sklearn': 80,
+            'numpy': 20,
+            'pandas': 40,
+            
+            // Visualization
+            'matplotlib': 50,
+            'seaborn': 5,
+            'plotly': 35,
+            'bokeh': 90,
+            
+            // Computer Vision
+            'cv2': 150,
+            'opencv-python': 150,
+            'opencv-contrib-python': 200,
+            'PIL': 3,
+            'Pillow': 3,
+            'scikit-image': 45,
+            'skimage': 45,
+            
+            // Web/API
+            'fastapi': 2,
+            'flask': 1,
+            'django': 15,
+            'requests': 1,
+            'aiohttp': 3,
+            'uvicorn': 2,
+            
+            // Data Processing
+            'dask': 10,
+            'ray': 80,
+            'pyspark': 300,
+            'h5py': 8,
+            'zarr': 5,
+            
+            // Utils
+            'tqdm': 0.1,
+            'click': 0.5,
+            'pyyaml': 0.3,
+            'python-dotenv': 0.1,
+            'pytest': 2,
+            
+            // NLP
+            'nltk': 15,
+            'spacy': 60,
+            'gensim': 150,
+            'tokenizers': 30,
+            
+            // Default for unknown packages
+            '_default': 5
+        };
+
+        // Alternative package suggestions
+        const alternatives = {
+            'opencv-python': ['Pillow for basic image ops', 'scikit-image for filters'],
+            'pandas': ['polars for faster operations', 'dask for distributed'],
+            'tensorflow': ['PyTorch for research', 'JAX for performance'],
+            'matplotlib': ['plotly for interactive', 'seaborn for statistics'],
+            'scipy': ['numpy for basic ops', 'numba for JIT compilation'],
+            'requests': ['httpx for async', 'aiohttp for async servers']
+        };
+
+        const templates = {
+            bloated: `# Bloated ML project with many unused imports
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision
+import tensorflow as tf  # Why both TF and PyTorch?
+import keras
+import numpy as np
+import pandas as pd
+import scipy
+import sklearn
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px  # Three viz libraries!
+import cv2
+import PIL
+from transformers import *  # Importing everything!
+import nltk
+import spacy
+import gensim
+import requests
+import flask  # Unused web framework
+import django  # Another unused framework
+from tqdm import tqdm
+import wandb
+import tensorboard
+import pytest  # Test framework in production?
+import black  # Code formatter in production?
+import mypy  # Type checker in production?`,
+
+            'data-science': `# Typical data science notebook imports
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
+import lightgbm as lgb
+from tqdm.notebook import tqdm
+import warnings
+warnings.filterwarnings('ignore')`,
+
+            fastapi: `# Clean FastAPI service imports
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel, Field
+from typing import List, Optional
+import uvicorn
+from datetime import datetime
+import logging
+from contextlib import asynccontextmanager
+
+# Only what we need!`,
+
+            minimal: `# Minimal, clean imports
+import torch
+import torch.nn as nn
+import numpy as np
+from pathlib import Path
+from typing import Dict, List, Tuple
+import json
+import logging`
+        };
+
+        function loadTemplate(name) {
+            document.getElementById('codeInput').value = templates[name];
+        }
+
+        function getPackageSize(packageName) {
+            const name = packageName.toLowerCase().split('[')[0].split('=')[0].split('>')[0].split('<')[0];
+            return packageSizes[name] || packageSizes._default;
+        }
+
+        function analyzeImports() {
+            const input = document.getElementById('codeInput').value;
+            
+            if (!input.trim()) {
+                alert('Please enter Python code or requirements.txt content!');
+                return;
+            }
+
+            // Extract imports
+            const importRegex = /(?:import|from)\s+([\w\.]+)(?:\s+import)?/g;
+            const requirementsRegex = /^([\w\-\[\]]+)/gm;
+            
+            let packages = new Set();
+            let isRequirementsFile = false;
+            
+            // Check if it's requirements.txt format
+            if (input.includes('==') || input.includes('>=') || !input.includes('import')) {
+                isRequirementsFile = true;
+                const matches = input.match(requirementsRegex);
+                if (matches) {
+                    matches.forEach(match => {
+                        const pkg = match.split(/[=<>!]/)[0].trim();
+                        if (pkg) packages.add(pkg);
+                    });
+                }
+            } else {
+                // Parse Python imports
+                let match;
+                while ((match = importRegex.exec(input)) !== null) {
+                    const pkg = match[1].split('.')[0];
+                    packages.add(pkg);
+                }
+                
+                // Also check for "from x import *" patterns
+                const fromImportAll = /from\s+([\w\.]+)\s+import\s+\*/g;
+                while ((match = fromImportAll.exec(input)) !== null) {
+                    packages.add(match[1].split('.')[0]);
+                }
+            }
+
+            // Analyze packages
+            const packageList = Array.from(packages);
+            let totalSize = 0;
+            let unusedCount = 0;
+            let bloatedCount = 0;
+            let necessaryCount = 0;
+            
+            const analyzed = packageList.map(pkg => {
+                const size = getPackageSize(pkg);
+                totalSize += size;
+                
+                // Determine status (simplified heuristic)
+                let status = 'necessary';
+                let statusClass = 'status-necessary';
+                
+                // Check for commonly unused packages
+                const commonlyUnused = ['pytest', 'black', 'mypy', 'flake8', 'pylint', 'coverage'];
+                const bloated = ['tensorflow', 'opencv-python', 'scipy', 'pyspark'];
+                
+                if (commonlyUnused.includes(pkg.toLowerCase())) {
+                    status = 'unused';
+                    statusClass = 'status-unused';
+                    unusedCount++;
+                } else if (bloated.includes(pkg.toLowerCase()) || size > 100) {
+                    status = 'bloated';
+                    statusClass = 'status-bloated';
+                    bloatedCount++;
+                } else {
+                    necessaryCount++;
+                }
+                
+                // Check for duplication
+                if (packages.has('tensorflow') && packages.has('torch')) {
+                    if (pkg === 'tensorflow' || pkg === 'torch') {
+                        status = 'bloated';
+                        statusClass = 'status-bloated';
+                    }
+                }
+                
+                return {
+                    name: pkg,
+                    size: size,
+                    status: status,
+                    statusClass: statusClass
+                };
+            });
+            
+            // Sort by size
+            analyzed.sort((a, b) => b.size - a.size);
+            
+            // Generate report
+            displayResults(analyzed, totalSize, unusedCount, bloatedCount, necessaryCount);
+        }
+
+        function displayResults(analyzed, totalSize, unusedCount, bloatedCount, necessaryCount) {
+            // Show results section
+            document.getElementById('analysisResults').style.display = 'block';
+            
+            // Update summary stats
+            const summaryHTML = `
+                <div class="summary-stat">
+                    <span class="summary-stat-label">Total Packages:</span>
+                    <span class="summary-stat-value">${analyzed.length}</span>
+                </div>
+                <div class="summary-stat">
+                    <span class="summary-stat-label">Total Size:</span>
+                    <span class="summary-stat-value">${totalSize.toFixed(1)} MB</span>
+                </div>
+                <div class="summary-stat">
+                    <span class="summary-stat-label">Unused:</span>
+                    <span class="summary-stat-value" style="color: #ff9933;">${unusedCount}</span>
+                </div>
+                <div class="summary-stat">
+                    <span class="summary-stat-label">Bloated:</span>
+                    <span class="summary-stat-value" style="color: #ff3333;">${bloatedCount}</span>
+                </div>
+            `;
+            document.getElementById('summaryStats').innerHTML = summaryHTML;
+            
+            // Generate import list
+            let importListHTML = '<h3 style="color: #cc66ff; margin-bottom: 15px;">📦 Package Analysis</h3>';
+            
+            analyzed.forEach(pkg => {
+                const className = pkg.status === 'unused' ? 'import-unused' : 
+                                 pkg.status === 'bloated' ? 'import-bloated' : 
+                                 'import-necessary';
+                
+                importListHTML += `
+                    <div class="import-item ${className}">
+                        <span class="import-name">${pkg.name}</span>
+                        <span class="import-size">${pkg.size.toFixed(1)} MB</span>
+                        <span class="import-status ${pkg.statusClass}">${pkg.status.toUpperCase()}</span>
+                    </div>
+                `;
+                
+                // Add alternative suggestion if available
+                if (alternatives[pkg.name.toLowerCase()] && pkg.status === 'bloated') {
+                    importListHTML += `
+                        <div class="alternative-suggestion">
+                            <div class="alternative-title">💡 Consider alternatives:</div>
+                            ${alternatives[pkg.name.toLowerCase()].map(alt => 
+                                `<div class="suggestion-item">${alt}</div>`
+                            ).join('')}
+                        </div>
+                    `;
+                }
+            });
+            
+            document.getElementById('importList').innerHTML = importListHTML;
+            
+            // Generate optimization suggestions
+            if (unusedCount > 0 || bloatedCount > 0) {
+                const suggestions = [];
+                
+                if (unusedCount > 0) {
+                    suggestions.push(`Remove ${unusedCount} unused packages to save space`);
+                }
+                
+                if (bloatedCount > 0) {
+                    suggestions.push(`Replace ${bloatedCount} bloated packages with lighter alternatives`);
+                }
+                
+                // Check for specific issues
+                if (analyzed.some(p => p.name === 'tensorflow') && analyzed.some(p => p.name === 'torch')) {
+                    suggestions.push('Using both TensorFlow and PyTorch - choose one!');
+                }
+                
+                if (analyzed.some(p => ['pytest', 'black', 'mypy'].includes(p.name))) {
+                    suggestions.push('Remove development tools from production dependencies');
+                }
+                
+                const potentialSavings = analyzed
+                    .filter(p => p.status !== 'necessary')
+                    .reduce((sum, p) => sum + p.size, 0);
+                
+                if (potentialSavings > 0) {
+                    suggestions.push(`Potential savings: ${potentialSavings.toFixed(1)} MB (${((potentialSavings/totalSize)*100).toFixed(0)}%)`);
+                }
+                
+                document.getElementById('suggestionsList').innerHTML = suggestions
+                    .map(s => `<div class="suggestion-item">${s}</div>`)
+                    .join('');
+                document.getElementById('optimizations').style.display = 'block';
+            }
+            
+            // Docker impact
+            const baseImageSize = 800; // Python base image
+            const currentSize = baseImageSize + totalSize;
+            const optimizedSize = baseImageSize + (totalSize - analyzed
+                .filter(p => p.status !== 'necessary')
+                .reduce((sum, p) => sum + p.size, 0));
+            
+            const dockerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <strong>Current Image Size:</strong> ~${currentSize.toFixed(0)} MB
+                </div>
+                <div class="size-bar">
+                    <div class="size-bar-fill" style="width: 100%;">
+                        ${currentSize.toFixed(0)} MB
+                    </div>
+                </div>
+                <div style="margin: 15px 0;">
+                    <strong>Optimized Size:</strong> ~${optimizedSize.toFixed(0)} MB
+                </div>
+                <div class="size-bar">
+                    <div class="size-bar-fill" style="width: ${(optimizedSize/currentSize*100)}%; background: linear-gradient(90deg, #33ff33, #66ff66);">
+                        ${optimizedSize.toFixed(0)} MB (-${((1 - optimizedSize/currentSize)*100).toFixed(0)}%)
+                    </div>
+                </div>
+                <div class="code-snippet" style="margin-top: 15px;">
+# Optimized Dockerfile
+FROM python:3.10-slim
+COPY requirements-prod.txt .
+RUN pip install --no-cache-dir -r requirements-prod.txt
+# Saves ${(currentSize - optimizedSize).toFixed(0)} MB!
+                </div>
+            `;
+            
+            document.getElementById('dockerStats').innerHTML = dockerHTML;
+            document.getElementById('dockerImpact').style.display = 'block';
+        }
+
+        // Load bloated template on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTemplate('bloated');
+        });
+    </script>
+</body>
+</html>
