@@ -316,10 +316,92 @@
                 <svg class="icon" viewBox="0 0 24 24">
                     <path d="M12 2L2 7V17L12 22L22 17V7L12 2M12 4.44L19.2 8.4L12 12.36L4.8 8.4L12 4.44M4 10.24L11 14.2V19.76L4 15.8V10.24M13 19.76V14.2L20 10.24V15.8L13 19.76Z"/>
                 </svg>
-                RTX 5080 GPU Memory Predictor
-                <span class="rtx-badge">16GB GDDR7</span>
+                GPU Memory Predictor
+                <span class="rtx-badge" id="gpu-badge">Select GPU</span>
             </h1>
             <p>Predict PyTorch model memory usage before training - Prevent OOM errors</p>
+            <div style="margin: 20px 0;">
+                <select id="gpu-selector" style="background: #000; color: #76b900; padding: 10px 20px; font-size: 16px; border: 2px solid #76b900; border-radius: 5px; cursor: pointer;">
+                    <option value="">-- Select Your GPU --</option>
+                    <optgroup label="RTX 40 Series">
+                        <option value="24">RTX 4090 (24 GB)</option>
+                        <option value="16">RTX 4080 (16 GB)</option>
+                        <option value="12">RTX 4070 Ti (12 GB)</option>
+                        <option value="12">RTX 4070 (12 GB)</option>
+                        <option value="8">RTX 4060 Ti (8 GB)</option>
+                        <option value="8">RTX 4060 (8 GB)</option>
+                    </optgroup>
+                    <optgroup label="RTX 30 Series">
+                        <option value="24">RTX 3090 Ti (24 GB)</option>
+                        <option value="24">RTX 3090 (24 GB)</option>
+                        <option value="12">RTX 3080 Ti (12 GB)</option>
+                        <option value="10">RTX 3080 (10 GB)</option>
+                        <option value="8">RTX 3070 Ti (8 GB)</option>
+                        <option value="8">RTX 3070 (8 GB)</option>
+                        <option value="8">RTX 3060 Ti (8 GB)</option>
+                        <option value="12">RTX 3060 (12 GB)</option>
+                    </optgroup>
+                    <optgroup label="Professional/Datacenter">
+                        <option value="80">H100 (80 GB)</option>
+                        <option value="80">A100 (80 GB)</option>
+                        <option value="40">A100 (40 GB)</option>
+                        <option value="48">RTX A6000 (48 GB)</option>
+                        <option value="24">RTX A5000 (24 GB)</option>
+                        <option value="16">RTX A4000 (16 GB)</option>
+                        <option value="24">Titan RTX (24 GB)</option>
+                        <option value="32">V100 (32 GB)</option>
+                        <option value="16">V100 (16 GB)</option>
+                        <option value="16">T4 (16 GB)</option>
+                    </optgroup>
+                    <optgroup label="RTX 20 Series">
+                        <option value="11">RTX 2080 Ti (11 GB)</option>
+                        <option value="8">RTX 2080 Super (8 GB)</option>
+                        <option value="8">RTX 2080 (8 GB)</option>
+                        <option value="8">RTX 2070 Super (8 GB)</option>
+                        <option value="8">RTX 2070 (8 GB)</option>
+                        <option value="6">RTX 2060 Super (6 GB)</option>
+                        <option value="6">RTX 2060 (6 GB)</option>
+                    </optgroup>
+                    <optgroup label="GTX 10 Series">
+                        <option value="11">GTX 1080 Ti (11 GB)</option>
+                        <option value="8">GTX 1080 (8 GB)</option>
+                        <option value="8">GTX 1070 Ti (8 GB)</option>
+                        <option value="8">GTX 1070 (8 GB)</option>
+                        <option value="6">GTX 1060 (6 GB)</option>
+                        <option value="3">GTX 1060 (3 GB)</option>
+                    </optgroup>
+                    <optgroup label="AMD">
+                        <option value="24">RX 7900 XTX (24 GB)</option>
+                        <option value="20">RX 7900 XT (20 GB)</option>
+                        <option value="16">RX 7800 XT (16 GB)</option>
+                        <option value="16">RX 6800 XT (16 GB)</option>
+                        <option value="16">RX 6800 (16 GB)</option>
+                        <option value="12">RX 6700 XT (12 GB)</option>
+                    </optgroup>
+                    <optgroup label="Apple Silicon">
+                        <option value="8">M1 (8 GB shared)</option>
+                        <option value="16">M1 Pro (16 GB shared)</option>
+                        <option value="32">M1 Max (32 GB shared)</option>
+                        <option value="64">M1 Ultra (64 GB shared)</option>
+                        <option value="96">M2 Ultra (96 GB shared)</option>
+                    </optgroup>
+                    <optgroup label="Intel Arc">
+                        <option value="16">Arc A770 (16 GB)</option>
+                        <option value="8">Arc A750 (8 GB)</option>
+                        <option value="6">Arc A380 (6 GB)</option>
+                    </optgroup>
+                    <optgroup label="Future/Rumored">
+                        <option value="32">RTX 5090 (32 GB rumored)</option>
+                        <option value="16">RTX 5080 (16 GB rumored)</option>
+                        <option value="12">RTX 5070 (12 GB rumored)</option>
+                    </optgroup>
+                    <optgroup label="Cloud/Colab">
+                        <option value="15">Google Colab T4 (15 GB)</option>
+                        <option value="40">Google Colab A100 (40 GB)</option>
+                        <option value="16">Kaggle P100 (16 GB)</option>
+                    </optgroup>
+                </select>
+            </div>
             <div style="margin-top: 15px;">
                 <a href="tools.html" style="color: #222; text-decoration: none; margin-right: 20px; font-weight: bold;">← All Tools</a>
                 <a href="index.html" style="color: #222; text-decoration: none; font-weight: bold;">🔍 Try Tensor Debugger</a>
@@ -410,7 +492,7 @@ class MyModel(nn.Module):
 
                 <div class="warning" id="warning">
                     ⚠️ <strong>MEMORY WARNING!</strong><br>
-                    Your model exceeds RTX 5080 memory capacity. Consider:
+                    Your model exceeds GPU memory capacity. Consider:
                     • Reduce batch size
                     • Use gradient checkpointing
                     • Switch to mixed precision (FP16)
@@ -419,7 +501,7 @@ class MyModel(nn.Module):
 
                 <div class="success" id="success">
                     ✅ <strong>MEMORY OK!</strong><br>
-                    Your model fits comfortably in RTX 5080 memory with safety margin.
+                    Your model fits comfortably in GPU memory with safety margin.
                 </div>
 
                 <div class="progress-bar">
@@ -822,8 +904,7 @@ class LSTMModel(nn.Module):
             document.getElementById('totalMemory').textContent = `${totalMemoryMB.toFixed(1)} MB (${totalMemoryGB.toFixed(2)} GB)`;
 
             // Progress bar and warnings
-            const rtx5080MemoryGB = 16;
-            const memoryUsagePercent = (totalMemoryGB / rtx5080MemoryGB) * 100;
+            const memoryUsagePercent = (totalMemoryGB / selectedGPUMemory) * 100;
             
             const progressBar = document.getElementById('memoryProgress');
             const warning = document.getElementById('warning');
@@ -849,8 +930,48 @@ class LSTMModel(nn.Module):
             document.getElementById('layerAnalysis').innerHTML = layerAnalysisHTML;
         }
 
+        // GPU selector functionality
+        let selectedGPUMemory = 16; // Default to RTX 5080
+        
+        function updateGPUSelection() {
+            const selector = document.getElementById('gpu-selector');
+            selectedGPUMemory = parseInt(selector.value);
+            
+            // Save preference
+            localStorage.setItem('selectedGPU', selector.value);
+            localStorage.setItem('selectedGPUName', selector.options[selector.selectedIndex].text);
+            
+            // Update GPU specs display
+            const specsDiv = document.querySelector('.gpu-specs');
+            const gpuName = selector.options[selector.selectedIndex].text;
+            specsDiv.innerHTML = `
+                <h3>${gpuName} Selected</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left;">
+                    <div>Memory: <strong>${selectedGPUMemory}GB</strong></div>
+                    <div>Status: <strong style="color: #76b900;">Active</strong></div>
+                </div>
+            `;
+            
+            // Re-analyze if model code exists
+            const modelCode = document.getElementById('modelCode').value;
+            if (modelCode.trim()) {
+                analyzeModel();
+            }
+        }
+        
         // Auto-analyze when template is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            // Load saved GPU preference
+            const savedGPU = localStorage.getItem('selectedGPU');
+            if (savedGPU) {
+                document.getElementById('gpu-selector').value = savedGPU;
+                selectedGPUMemory = parseInt(savedGPU);
+                updateGPUSelection();
+            }
+            
+            // Add event listener for GPU selector
+            document.getElementById('gpu-selector').addEventListener('change', updateGPUSelection);
+            
             // Load ResNet template by default
             loadTemplate('resnet');
         });
