@@ -298,6 +298,7 @@
                     <button class="model-btn" onclick="loadTemplate('resnet')">ResNet Block</button>
                     <button class="model-btn" onclick="loadTemplate('transformer')">Transformer</button>
                     <button class="model-btn" onclick="loadTemplate('lstm')">LSTM Network</button>
+                    <button class="model-btn" onclick="loadTemplate('vit')" style="border: 2px solid #ffaa00;">🔥 ViT (NEW)</button>
                 </div>
                 
                 <textarea id="codeInput" placeholder="Paste your PyTorch model or select a template above..."></textarea>
@@ -406,6 +407,46 @@ class BasicNet(nn.Module):
         x = torch.relu(self.layer2(x))  # This will crash!
         x = self.layer3(x)
         return x`,
+        
+            vit: `import torch.nn as nn
+
+class VisionTransformer(nn.Module):
+    """Vision Transformer (ViT) - The hot architecture everyone's using"""
+    def __init__(self, image_size=224, patch_size=16, num_classes=1000, 
+                 dim=768, depth=12, heads=12, mlp_dim=3072):
+        super().__init__()
+        num_patches = (image_size // patch_size) ** 2
+        patch_dim = 3 * patch_size ** 2
+        
+        self.patch_embedding = nn.Linear(patch_dim, dim)
+        self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
+        self.cls_token = nn.Parameter(torch.randn(1, 1, dim))
+        
+        # Transformer blocks
+        self.transformer = nn.ModuleList([
+            TransformerBlock(dim, heads, mlp_dim) for _ in range(depth)
+        ])
+        
+        # MLP Head
+        self.mlp_head = nn.Sequential(
+            nn.LayerNorm(dim),
+            nn.Linear(dim, 512),  # BUG: Should be dim (768)
+            nn.GELU(),
+            nn.Linear(512, num_classes)  # Dimension mismatch!
+        )
+
+class TransformerBlock(nn.Module):
+    def __init__(self, dim, heads, mlp_dim):
+        super().__init__()
+        self.attention = nn.MultiheadAttention(dim, heads)
+        self.norm1 = nn.LayerNorm(dim)
+        self.norm2 = nn.LayerNorm(dim)
+        
+        self.mlp = nn.Sequential(
+            nn.Linear(dim, mlp_dim),
+            nn.GELU(),
+            nn.Linear(mlp_dim, dim)
+        )`,
 
             cnn: `import torch.nn as nn
 
@@ -703,6 +744,17 @@ class LSTMModel(nn.Module):
 
             // Show errors first
             if (analysis.errors.length > 0) {
+                // Success celebration
+                const userNumber = Math.floor(parseInt(localStorage.getItem('rtx5080_bugs_found') || '0') / 2) + 1;
+                html += `<div style="background: linear-gradient(135deg, #ff6666, #ff8888); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                    <div style="color: white; font-size: 1.3em; font-weight: bold;">
+                        🎉 Bug Found! You're the #${userNumber} person to catch tensor errors with this tool!
+                    </div>
+                    <div style="color: #ffeeee; margin-top: 5px;">
+                        These would have crashed PyTorch at runtime. You just saved debugging time!
+                    </div>
+                </div>`;
+                
                 html += '<div style="color: #ff6666; font-size: 1.1em; margin-bottom: 20px;"><strong>🚨 Critical Issues Found:</strong></div>';
                 analysis.errors.forEach(error => {
                     html += `
